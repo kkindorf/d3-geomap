@@ -8,7 +8,16 @@
   <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script src="https://unpkg.com/topojson-client@3"></script>
   <style>
-
+  div.tooltip {
+position: absolute;
+width: 150px;
+font: 14px sans-serif;
+background: #000;
+border: 0px;
+border-radius: 5px;
+pointer-events: none;
+color: white;
+}
   </style>
 </head>
 
@@ -18,6 +27,9 @@
   </svg>
 
   <script>
+  var div = d3.select("body").append("div")
+           .attr("class", "tooltip")
+           .style("opacity", 0);
  var width = window.innerWidth;
  var height = window.innerHeight;
   var chart = d3.select('.chart');
@@ -26,7 +38,7 @@
 
   var projection = d3.geo.mercator()
                      .translate([width/2, height/2])
-                     .scale([150]);//default scale is 1000
+                     .scale([120]);//default scale is 1000
     var path = d3.geo.path()
                      .projection(projection);
 
@@ -64,10 +76,24 @@
                   return projection([d.geometry.coordinates[0], d.geometry.coordinates[1]])[1];
                 })
                 .attr('r', function(d) {
-                  return Math.sqrt(parseInt(d.properties.mass) * 0.0003)
+                  return Math.sqrt(d.properties.mass / 2 * 0.0003)
                 })
                 .style('fill', 'yellow')
-                .style('opacity', 0.75);
+                .style('opacity', 0.75)
+                .on('mouseover', function(d) {
+                  console.log(d.properties)
+                div.transition()
+                   .duration(200)
+                   .style('opacity', .9)
+                   div.html('Mass: ' +d.properties.mass+'<br/>'+ 'Name: '+d.properties.name + '<br/>'+ 'Year: '+d.properties.year.substring(0, 4))
+                   .style('left',  (d3.event.pageX) + 'px')
+                   .style('top', (d3.event.pageY - 28)+'px')
+              })
+              .on('mouseout', function(d) {
+                div.transition()
+                   .duration(300)
+                   .style('opacity', 0)
+              })
            })
       })
 
